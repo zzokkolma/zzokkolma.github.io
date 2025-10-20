@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local LLMs: C Programming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        .summary {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .summary h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .warning {
+            background: linear-gradient(135deg, #8c0000 0%, #b15d28 100%);
+            color: white;
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .warning h2 {
+            color: #white;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            padding: 15px;
+            font-size: 0.95em;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+            font-size: 0.85rem;
+        }
+        td.wide {
+            min-width: 25%;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .model-name {
+            font-weight: 600;
+            color: #333;
+        }
+        .model-specs {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-partial {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-disqualified {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        .perf {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .key-insights {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .key-insights h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .key-insights ul {
+            list-style: none;
+        }
+        .key-insights li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .key-insights li:last-child {
+            border-bottom: none;
+        }
+        .key-insights li::before {
+            content: "▸ ";
+            color: #ffd700;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            th, td {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+        blockquote, pre {
+            margin: .5rem 1rem;
+            border-left: .25rem solid #667eea;
+            padding: 1rem;
+        }
+        blockquote pre {
+            border: none;
+            padding: .1rem;
+        }
+        p {
+            margin-top: .666rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Local LLMs: C Programming</h1>
+            <p class="subtitle">Testing Local Large Language Models (LLMs) on Implementing OBJ File Format Parser in C</p>
+        </header>
+
+        <section class="warning">
+            <h2>Warning</h2>
+            <p><strong>Sample Size = 1</strong>.<br/><small>Almost all results listed in this analysis are based on a single output from each model. I encourage running similar tests with more samples if you have the time and compute!</small></p>
+        </section>
+
+        <section class="summary">
+            <h2>Executive Summary</h2>
+            <p>This experiment evaluated the capability of local Large Language Models (LLMs) to implement a <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">Wavefront OBJ</a> mesh file parser in C without external dependencies. Each model received one initial prompt and one vague correction attempt. The task was intentionally vague to simulate real-world coding scenarios where requirements are not perfectly specified or users lack the necessary experience. Success was determined solely by the model's ability to correctly load a simple mesh in that format, with no consideration for code quality.</p>
+            <p>Of the 19 local models evaluated, only 4 managed to produce a working solution on their first attempt, while 3 more models succeeded within one correction attempt. The remaining 12 models failed, with the most prevalent issue being failure to realize that the <code>strtok</code> function modifies the input buffer.</p>
+        </section>
+
+        <section class="summary">
+            <h2>Conditions</h2>
+            <p>Unless otherwise noted, all models were run locally using <a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> CPU-only inference, using the default template included in the GGUF, with default llama.cpp settings and a context window of 16384 tokens. No custom system prompt was given. They were all given the exact same user prompt, as follows</p>
+
+            <blockquote>
+                Write an OBJ mesh importer in C. Do not use external libraries, the implementation cannot have external dependencies. Make sure to support the mesh (vertex position, ordering, UV coordinates) and material data.
+            </blockquote>
+
+            <p>The prompt is intentionally vague in order to evaluate how the models would perform with a junior programmer, or someone who is just starting out with programming. It is useful for testing how they do when you don't really know much about the subject you are asking about, and cannot provide more detailed instructions.</p>
+            <p>While the initial user prompt asks to support materials, the test mesh did not use any materials. It did, however, have normals, which were not explicitly listed in the prompt.</p>
+            <p>Since most models did not produce a functional solution on their first attempt, the program was debugged to identify the root of the problem, which was noted, and then the model was given one vague correction prompt, similar to the following</p>
+
+            <blockquote>
+                Thank you, but there seems to be a problem with the code - it does not load the faces correctly. Please correct the problem.
+            </blockquote>
+
+            <p>Once again, the goal was not to provide detailed and precise information, but rather a more general "something's wrong, it doesn't work" kind of approach. In cases where the program crashed, the model was provided a prompt with a stack trace, similar to the following</p>
+
+            <blockquote>
+                Thank you, but there seems to be a problem with the code - the program crashes. When I try to run it under the gdb debugger, I get the following output. Please correct the problem.
+<pre><code>(gdb) r
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff7e2e405 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+(gdb) bt
+#0  0x00007ffff7e2e405 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ffff7e1d32d in __isoc99_sscanf () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x0000555555555560 in loadObj (filename=0x5555555560f9 "test.obj") at loader.c:79
+#3  0x0000555555555977 in main () at loader.c:131</code></pre>
+            </blockquote>
+
+            <p>If the model's first attempt failed to compile, it got one extra chance to fix the compilation errors, in addition to the one correction prompt. The compilation-error prompt looked like the following</p>
+
+            <blockquote>
+                Thank you, however there is a problem. The code does not compile. I get the following error:
+<pre><code>pobj-dscoder.c: In function ‘loadMaterials’:
+pobj-dscoder.c:89:32: error: ‘material’ undeclared (first use in this function); did you mean ‘Material’?
+   89 |             fscanf(file, "%s", material->map_Kd);</code></pre>
+            </blockquote>
+
+            <p>The code was compiled on Debian Linux with GCC 12, using <code>gcc -Wall -Wextra -g -o output source.c</code>.</p>
+
+            <p>The testing took place during September - October 2025.</p>
+
+            <p>The experiment was run on Debian Linux on two systems: an 8-core system with 64 GB RAM, and a 16-core system with 128 GB of RAM, based on which one I had available at that time. Models, which did not fit in RAM, were streamed from an NVMe SSD or an NVMe RAID-0 array of two drives. According to the Linux <code>top</code> utility, the first system spent up to 40% of time on iowait with large models, while the second system rarely spent more than 5% of time on iowait.</p>
+        </section>
+
+        <section class="summary">
+            <h2>Model sources</h2>
+            <p>All GGUFs were downloaded from <a href="https://huggingface.co/models">Hugging Face</a>. They are a mix of quantizations done by different people, mostly <a href="https://huggingface.co/bartowski">Bartowski</a> and <a href="https://huggingface.co/unsloth">Unsloth AI</a>, but also by others when the two aforementioned sources did not have a model I was looking for.</p>
+            <p>Sizes and quantization types (Q6, Q4, IQ1, etc.) are listed below the model name. Quantization type indicates approximate average bits-per-weight, with lower/smaller quants having lower precision and a bigger quality loss compared to original model weights.</p>
+        </section>
+
+        <section class="summary">
+            <h2>Evaluation</h2>
+            <p>The resulting programs were evaluated primarily based on their ability to load a simple <code>.obj</code> mesh file with a single mesh exported from <a href="https://www.blender.org/">Blender</a>. This means that regardless of the quality of the implementation, if the loaded vertices, UVs, and faces were correct, it was considered a success. Likewise, if the loaded data was wrong, incomplete, or the program crashed, it was considered a failure regardless of how close the model was to a working solution.</p>
+            <p>In addition to that, each attempt was debugged to identify the root problem, and some notes were taken about the subjective opinion of the generated code or the models reasoning process.</p>
+            <p>The generated programs were <strong>not</strong> evaluated in terms of security or safety. They were <strong>not</strong> checked for memory leaks, even though some notes mention those when they were obvious. Success was entirely about providing the correct data.</p>
+            <p>While some notes were taken regarding the CPU inference performance, they have been mostly omitted from the per-model results, as that is heavily dependent on the setup. Instead, total amount of tokens processed is noted, which could be more generally useful for assessing cost and performance.</p>
+            <p>Results are provided in the order in which the models were tested (in case that is relevant); this means the first result (Magistral-Small-2509) was the first to be tested in September, and the last result (Apriel-1.5-15b-Thinker) was the last model to be tested in October.</p>
+        </section>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Initial Response</th>
+                    <th>Corrected Response</th>
+                    <th>Notes</th>
+                    <th>Final Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="model-name">Magistral-Small-2509</div>
+                        <div class="model-specs">24B dense • 18GB Q6 • thinking</div>
+                    </td>
+                    <td class="wide">280 lines of C; compiles without warnings; fails to load faces.<br/>
+                        <strong>BUG</strong>: Reusing a buffer modified by <code>strtok</code><br/>
+                        <span class="perf">9700 tokens</span></td> <!-- First Prompt Result -->
+                    <td class="wide">Compiles without warnings; fails to load faces.<br/>
+                        <strong>BUG</strong>: Still reusing a <code>strtok</code> buffer<br/>
+                        <span class="perf">13000 tokens</span></td> <!-- Second Prompt Result -->
+                    <td class="wide">Model correctly guessed that <code>strtok</code> could be the problem, but failed to realize it modifies the buffer.</td> <!-- Notes -->
+                    <td>
+                        <span class="status status-fail">Failed</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Qwen3-30B-A3B-Thinking-2507</div>
+                        <div class="model-specs">30B MoE • 18GB Q4 • thinking</div>
+                    </td>
+                    <td>351 lines of C; compiles with warnings; crashes.<br/>
+                        <strong>BUG</strong>: Misinterpreting first 8 bytes of a buffer as pointer<br/>
+                        <span class="perf">13200 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles with warnings; still crashes.<br/>
+                        <strong>BUG</strong>: Same as before, problem wasn't fixed<br/>
+                        <span class="perf">10100 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>Misdiagnosed the problem as a null pointer and added null pointer checks in a bunch of unnecessary places.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Devstral-Small-2507</div>
+                        <div class="model-specs">24B dense • 18GB Q6</div>
+                    </td>
+                    <td>136 lines of C; compiles without warnings; crashes.<br/>
+                        <strong>BUG</strong>: Writing to a buffer before allocating it<br/>
+                        <span class="perf">2800 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles without warnings; fails to load faces.<br/>
+                        <strong>BUG</strong>: Too much of the format support was omitted<br/>
+                        <span class="perf">2200 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>Model acknowledged providing only a "minimal" implementation, correctly identified and fixed initial problem. The minimal implementation was insufficient to load the test mesh.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">gpt-oss-20b</div>
+                        <div class="model-specs">21B MoE • 12GB Q4 • thinking</div>
+                    </td>
+                    <td>587 lines of C; compiles with warnings; crashes.<br/>
+                        <strong>BUG</strong>: Attempts to read from an uninitialized pointer<br/>
+                        <span class="perf">8100 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles without warnings; crashes.<br/>
+                        <strong>BUG</strong>: Second use of <code>strtok</code> on same buffer returns <code>null</code><br/>
+                        <span class="perf">13100 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>First version didn't have the <code>strtok</code> bug, it was introduced during the fix. Model lies about testing its output.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">DeepSeek-Coder-V2-Lite-Instruct</div>
+                        <div class="model-specs">16B MoE • 14GB Q6</div>
+                    </td>
+                    <td>119 lines of C; does not compile<br/>
+                        <strong>BUG</strong>: Undeclared identifier<br/>
+                        After fixing compilation errors, compiles with warnings, fails to load data<br/>
+                        <strong>BUG</strong>: Assumes it can <code>fscanf</code> the same line it just got with <code>fgets</code><br/>
+                        <span class="perf">1650 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles with warnings; fails to load data<br/>
+                        <strong>BUG</strong>: Same as before, problem wasn't fixed<br/>
+                        <span class="perf">Tokens not recorded</span></td> <!-- Second Prompt Result -->
+                    <td>The model fixed the compilation error. Avoided dynamic memory allocation at all costs, everything was static fixed-sized buffers.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Codestral-22B-v0.1</div>
+                        <div class="model-specs">22B dense • 17GB Q6</div>
+                    </td>
+                    <td><span class="perf">N/A</span></td>
+                    <td><span class="perf">N/A</span></td>
+                    <td>Refused to write the code. Offered trivial advice and wrote 10 lines of a <code>main</code> stub with just comments like "First read the model".</td>
+                    <td><span class="status status-disqualified">Disqualified</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Llama-4-Scout-Instruct</div>
+                        <div class="model-specs">109B MoE • 49GB IQ3</div>
+                    </td>
+                    <td>151 lines of C; compiles without warnings; fails to load faces.<br/>
+                        <strong>BUG</strong>: Does not support normals in the file format<br/>
+                        <span class="perf">1700 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles without warnings; loads the data ignoring normals<br/>
+                        <span class="perf">2000 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>Code is low quality and minimal, lots of the file format features are skipped, parses lines manually. Model lies about supporting a face format that the code does not. It does however load the requested data correctly. Correctly identified the problem and did an isolated fix.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Seed-OSS-36B-Instruct</div>
+                        <div class="model-specs">36B dense • 21GB Q4 • thinking</div>
+                    </td>
+                    <td>314 lines of C; compiles with warnings; crashes.<br/>
+                        <strong>BUG</strong>: Attempts to <code>strdup</code> a <code>null</code> returned from <code>strtok</code><br/>
+                        <span class="perf">14300 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Interrupted due to time constraints</td> <!-- Second Prompt Result -->
+                    <td>Initial solution was provided in multiple parts out-of-order, I had to arrange them myself in the correct order to make them compile. The reasoning output during the fix attempt got the right idea, but fixated on the wrong call to <code>strdup</code>. It briefly considered the problem might be from <code>strtok</code> (which it was, <code>strtok</code> was called twice on the same buffer), but failed to realize <code>strtok</code> modifies the buffer and assumed that part is correct. Based on that it is assumed that the model would not have fixed the original problem.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">gpt-oss-120b</div>
+                        <div class="model-specs">120B MoE • 60GB Q4 • thinking</div>
+                    </td>
+                    <td>553 lines of C; compiles without warnings; fails to load data.<br/>
+                        <strong>BUG</strong>: Incorrect parameter passing to custom allocator<br/>
+                        <span class="perf">6800 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles without warnings; loads the data duplicating vertices<br/>
+                        <span class="perf">12000 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>Manually parses the lines avoiding <code>strtok</code>, as if they knew it can't use it properly! The fix attempt re-wrote more than half of the initial code, removed custom allocator, but also made a ton of pointless comment and indentation changes. Final code looks acceptable minus misleading comments. The vertices are duplicated, but the data is correct and would render correctly.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td rowspan="2">
+                        <div class="model-name">Qwen3-235B-A22B-Thinking</div>
+                        <div class="model-specs">235B MoE • 98GB Q3 • thinking</div>
+                    </td>
+                    <td>455 lines of C; compiles without warnings; crashes.<br/>
+                        <strong>BUG</strong>: Second use of <code>strtok</code> on same buffer returns <code>null</code><br/>
+                        <span class="perf">15800 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Interrupted due to time constraints</td> <!-- Second Prompt Result -->
+                    <td>Code looks mostly reasonable. First model to use <code>goto</code> for cleanup. Reasoning output from the fix attempt shows it correctly identified which part crashes, but failed to realize <code>strtok</code> modifies the buffer. It is not clear if the model would have fixed the issue in this attempt, as it was interrupted early.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr> <!-- Qwen235 run 2 -->
+                    <td>340 lines of C; compiles with warnings; loads data correctly<br/>
+                        <span class="perf">13500 tokens</span>; context raised to 32768</td> <!-- First Prompt Result -->
+                    <td>-</td> <!-- Second Prompt Result -->
+                    <td>This test was re-run on the bigger system with the goal of comparing inference performance, but happened to one-shot the task - so this result is included here for completeness. This time the model manually parsed the lines avoiding <code>strtok</code>, format support is decent, missing objects and groups which were not expected in the test. Code looks acceptable. Decided to flip the texture V coordinate to "match common rendering APIs", which confused me as no other model did that.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td rowspan="2">
+                        <div class="model-name">Kimi K2 Instruct</div>
+                        <div class="model-specs">1026B MoE • 355GB Q2</div>
+                    </td>
+                    <td>310 lines of C; compiles with warnings; fails to load data.<br/>
+                        <strong>BUG</strong>: Parsing a buffer already modified by <code>strtok</code><br/>
+                        <span class="perf">3100 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Not attempted due to time constraints</td> <!-- Second Prompt Result -->
+                    <td>This was by far the slowest model to run with less than 0.5 tok/s on CPU inference on the bigger system, so I decided to skip the fix attempt. This test was re-run again later.</td> <!-- Notes -->
+                    <td><span class="status status-disqualified">Unknown</span></td>
+                </tr>
+                <tr> <!-- Kimi K2 run 2 -->
+                    <td>255 lines of C; compiles with warnings; loads data correctly ignoring normals<br/>
+                        <span class="perf">2700 tokens</span></td> <!-- First Prompt Result -->
+                    <td>-</td> <!-- Second Prompt Result -->
+                    <td>Implemented its own version of <code>strtok</code> and a bunch of dynamic array helpers, some of which are unused. Uses <code>goto</code> for cleanup, but unnecessarily so. Only stores material name and nothing else. Otherwise code looks reasonable.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">DeepSeek-R1-0528</div>
+                        <div class="model-specs">671B MoE • 157GB IQ1 • thinking</div>
+                    </td>
+                    <td>281 lines of C; compiles without warnings; loads data correctly.<br/>
+                        <span class="perf">9900 tokens</span></td> <!-- First Prompt Result -->
+                    <td>-</td> <!-- Second Prompt Result -->
+                    <td>Handles all different face formats, but only minimal material handling. First model to use <code>strtok</code> correctly, and first to one-shot during testing.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Qwen3-Coder-30B-Instruct</div>
+                        <div class="model-specs">30B MoE • 24GB Q6</div>
+                    </td>
+                    <td>298 lines of C; compiles without warnings; fails to load data.<br/>
+                        <strong>BUG</strong>: Tries to <code>sscanf</code> a buffer modified by <code>strtok</code><br/>
+                        <span class="perf">2600 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles without warnings; fails to load data.<br/>
+                        <strong>BUG</strong>: Same as before, problem wasn't fixed.<br/>
+                        <span class="perf">2800 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>During the fix attempt, the model did a lot of pointless changes to the code without actually addressing the problem. Had some false statements in comments.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">GLM-4.6</div>
+                        <div class="model-specs">320B MoE • 108GB IQ2 • thinking</div>
+                    </td>
+                    <td>454 lines of C; compiles with warnings; loads data correctly.<br/>
+                        <span class="perf">4500 tokens</span></td> <!-- First Prompt Result -->
+                    <td>-</td> <!-- Second Prompt Result -->
+                    <td>This is a second one-shot model and second one to use <code>strtok</code> correctly.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">gemma-3-27b-it</div>
+                        <div class="model-specs">27B dense • 21GB Q6</div>
+                    </td>
+                    <td>198 lines of C; compiles without warnings; fails to load data.<br/>
+                        <strong>BUG</strong>: Discards valid loaded data by overwriting it with uninitialized memory<br/>
+                        <span class="perf">3100 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles with warnings; loads data correctly.<br/>
+                        <span class="perf">2400 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>Code quality is rather poor, all global variables, small fixed-sized buffers, no Mesh struct - just loose vertices and faces, leaking memory all over the place. The model misdiagnosed the initial problem, failed to fix the misdiagnosis and accidentally fixed the real problem while trying to change something else.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Apertus-70B-Instruct-2509</div>
+                        <div class="model-specs">70B dense • 54GB Q6</div>
+                    </td>
+                    <td>389 lines of C; does not compile.<br/>
+                        <strong>BUG</strong>: missing includes, accessing non-existing struct members<br/>
+                        <span class="perf">4800 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Still does not compile.<br/>
+                        <span class="perf">5400 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>Did not seem to understand the compilation error, tried commenting out unrelated parts of the code.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Mistral-Large-Instruct-2411</div>
+                        <div class="model-specs">122B dense • 94GB Q6</div>
+                    </td>
+                    <td>121 lines of C; compiles with warnings; crashes.<br/>
+                        <strong>BUG</strong>: Reads data into a <code>null</code> buffer before allocating it.<br/>
+                        <span class="perf">1800 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles with warnings; crashes.<br/>
+                        <strong>BUG</strong>: Same as before, problem wasn't fixed.<br/>
+                        <span class="perf">3800 tokens</span></td> <!-- Second Prompt Result -->
+                    <td>It correctly identified the root of the crash and one other problem with face vertex parsing. Unfortunately, it did not actually fix the problem, just added an extra variable that doesn't change either of those problems.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Meta Code World Model (CWM)</div>
+                        <div class="model-specs">32B dense • 18GB Q4</div>
+                    </td>
+                    <td>143 lines of C; compiles without warnings; fails to load faces.<br/>
+                        <strong>BUG</strong>: Does not support normals in the file format<br/>
+                        <span class="perf">2500 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Compiles with warnings; fails to load faces.<br/>
+                        <strong>BUG</strong>: Same as before, problem wasn't fixed.<br/>
+                        <span class="perf">Tokens not recorded</span></td> <!-- Second Prompt Result -->
+                    <td>The code is simplistic and minimal, also writes out-of-bounds into the vertex array. It realized that and fixed it during the fix attempt, but core of the problem remains. Also made incorrect assumptions about the file structure, so it wouldn't have worked this way anyway.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Apriel-1.5-15b-Thinker</div>
+                        <div class="model-specs">15B dense? • 12GB Q6 • thinking</div>
+                    </td>
+                    <td>Reached token limit before it finished thinking<br/>
+                        <span class="perf">16384 tokens</span></td> <!-- First Prompt Result -->
+                    <td>Entered infinite generation loop<br/>
+                        <span class="perf">40960 tokens</span>; context raised to 40960</td> <!-- Second Prompt Result -->
+                    <td>llama.cpp failed to parse the bundled jinja template and used a fallback instead. They weren't kidding with "extensive reasoning by default", this was the first model to use the whole 16k context window without even starting the final answer. It looks like this model isn't supported well by llama.cpp just yet. The thinking process looked interesting though, the model was attempting to be <strong>very</strong> thorough, considering all sorts of edge cases.</td> <!-- Notes -->
+                    <td><span class="status status-fail">Failed</span></td>
+                </tr>
+                <!-- -------------------------- PAID ONLINE SERVICES ---------------------- -->
+                <tr>
+                    <th colspan="5">Paid online service models</th>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Opus 4.1</div>
+                        <div class="model-specs">Proprietary • Unknown</div>
+                    </td>
+                    <td>580 lines of C; does not compile<br/>
+                        <strong>BUG</strong>: Missing <code>#endif</code><br/>
+                        <strong>This was fixed manually.</strong><br/>
+                        Compiles without warnings; loads data correctly.<br/>
+                        <span class="perf">Tokens unknown</span></td> <!-- First Prompt Result -->
+                    <td>-</td> <!-- Second Prompt Result -->
+                    <td rowspan="4" style="vertical-align: middle;">These were tested by someone else, just as a reference point and curiosity. I did not use these models nor oversee the process, I only provided the prompt and received the generated source code file.</td> <!-- Notes -->
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Sonnet 4</div>
+                        <div class="model-specs">Proprietary • Unknown</div>
+                    </td>
+                    <td>454 lines of C; compiles with warnings; loads data correctly.<br/>
+                        <span class="perf">Tokens unknown</span></td>
+                    <td>-</td>
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">Gemini 2.5 Pro</div>
+                        <div class="model-specs">Proprietary • Unknown</div>
+                    </td>
+                    <td>437 lines of C; compiles without warnings; loads data but each face has an extra empty vertex<br/>
+                        <strong>BUG</strong>: Assumes that <code>isspace</code> doesn't allow new lines, but it does, co last vertex is double counted<br/>
+                        <span class="perf">Tokens unknown</span></td>
+                    <td>Compiles without warnings; loads data correctly.</td>
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="model-name">ChatGPT 5 Pro</div>
+                        <div class="model-specs">Proprietary • Unknown</div>
+                    </td>
+                    <td>603 lines of C; compiles without warnings; loads data correctly.<br/>
+                        <span class="perf">Tokens unknown</span><br/>
+                        <span class="perf">Reasoned for 16m 38s</span></td>
+                    <td>-</td>
+                    <td><span class="status status-success">Success</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <section class="key-insights">
+            <h2>Conclusions</h2>
+            <ul>
+                <li><strong>Size matters</strong>: Only models over 100B parameters seem to somewhat reliably deal with C. While Gemma 3 (27B) also succeeded, it was struggling a lot and seemed to stumble into a working solution by pure accident.</li>
+                <li><strong>strtok is dangerous</strong>: 5 out of 12 failures were caused either directly or indirectly by incorrect usage of <code>strtok</code>. Out of the 7 models that succeeded, only 2 used <code>strtok</code> correctly, the others avoided this function altogether.</li>
+                <li><strong>Vague prompt is insufficient</strong>: A vague correction prompt like "this part is broken, please fix" is generally insufficient for the model to successfully fix the problem. Only one model - Llama 4 Scout - managed to do that convincingly. While gpt-oss-120b also fixed its problem, it did that by rewriting more than half of the solution, making it difficult to judge.</li>
+                <li><strong>C is difficult</strong>: Models advertised for programming/coding generally seem to do worse with C than big general purpose models. They might be tuned for other programming languages.</li>
+                <li><strong>C needs experts</strong>: Only MoE (Mixture-of-Experts) models managed to produce a working result, ignoring the Gemma 3 incident.
+            </ul>
+        </section>
+
+        <section class="summary">
+            <h2>Further research</h2>
+            <ul>
+                <li><strong>Prompts</strong>: Would the models do better if they were given a system prompt instructing them to try harder? Or more detailed instructions in the user prompt? Or maybe more information in the correction prompt? Or the test object attached?</li>
+                <li><strong>Settings</strong>: How does changing the default llama.cpp settings affect the results? Each model has different recommended settings, and in general lower "temperature" parameter values seem to be recommended for coding tasks.</li>
+                <li><strong>Tools</strong>: Some models lied about using tools, perhaps attempting to call them even though none were defined nor available? How would giving the models access to a compiler and debugger affect the results?</li>
+                <li><strong>Multiple runs</strong>: Run multiple independent, clean sessions for each model to see the failure rate. Two models failed on the initial run, but one-shot the task given a second run.</li>
+                <li><strong>Partitioning</strong>: How would the models perform, if they were first instructed to create a detailed plan, and then ran each step independently?</li>
+                <li><strong>Languages</strong>: How would the results look in a different programming language? We know that, in general, models tend to do a lot better with Python, but how about Rust or Go?</li>
+                <li><strong>Smaller models</strong>: This test assumed that nothing smaller than 15B parameters would be useful, and so no smaller models were tested. Maybe they should be? Even if it's just to confirm that assumption.</li>
+            </ul>
+        </section>
+
+        <section class="summary">
+            <h2>Other notes</h2>
+            <ul>
+                <li>Codestrals refusal to actually write code was unexpected, for a model advertised as being trained on programming languages (including C) and good for code generation, it sure didn't want to generate the code. Perhaps it knows enough about C to know it can't handle the task?</li>
+                <li>Gemma 3 was definitely a comedic factor, failing, tripping over itself, and falling over the finish line - successfully.</li>
+                <li>gpt-oss-* models perform surprisingly well on CPU-only inference, and do surprisingly little thinking (for thinking models) on default llama.cpp settings.</li>
+                <li>gpt-oss-* models seem to have a tendency to generate a bunch of helper functions, data structures, safe wrappers, as if trying to escape into a more high-level language.</li>
+                <li>I was surprised by Llama 4 Scout, while the solution was minimal, it did an isolated fix for a vague problem description and it worked. The entire turnaround time was around 15 min on CPU-only inference, which was also impressive. The code quality was low though, not the kind of code I would want to keep in my code base.</li>
+                <li>Qwen3 models, while performant in general, tend to think <strong>a lot</strong> and have frequent internal back and forth arguments, which ends up taking a lot of time and require long context windows.</li>
+                <li>Models themselves (without tool access) cannot count. Skimming through the thinking process of multiple models indicates they get confused by the line numbers and were looking in the wrong places, convincing themselves that that was what the error said. Perhaps removing line numbers might improve their ability to fix problems?</li>
+            </ul>
+        </section>
+
+        <section class="summary">
+            <h2>History</h2>
+            <ul>
+                <li>2025-10-20 Published</li>
+            </ul>
+            <p><a href="index.html">Back to list of experiments</a>.</p>
+        </section>
+    </div>
+</body>
+</html>
